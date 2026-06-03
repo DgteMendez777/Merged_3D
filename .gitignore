@@ -1,15 +1,22 @@
-node_modules
-.next
-.venv*
-dist
-build
+# Python
+__pycache__/
+*.pyc
+
+# Notebooks
+*.ipynb
+
+# Virtual env
+.venv/
+venv/
+
+# Next
+.next/
+
+# Node
+node_modules/
 
 # AI Models
 backend/models/
 *.pth
 *.pt
 *.onnx
-
-# Python cache
-__pycache__/
-*.pyc
