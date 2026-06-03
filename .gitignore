@@ -1,5 +1,15 @@
 node_modules
 .next
-.env
+.venv*
 dist
 build
+
+# AI Models
+backend/models/
+*.pth
+*.pt
+*.onnx
+
+# Python cache
+__pycache__/
+*.pyc
