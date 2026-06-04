@@ -1,21 +1,39 @@
 from fastapi import FastAPI
-from app.services.sam_service import SAMService
-from app.routes.segment import router as segment_router, set_sam_service
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(
-    title="Merged 3D API",
-    description="API para reconstruccion 3D con IA",
-    version="1.0.0"
+from app.routes.segment import router as segment_router
+from app.routes.segment import set_sam_service
+
+from app.services.sam_service import SAMService
+
+app = FastAPI()
+
+# ==========================
+# CORS
+# ==========================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-sam = SAMService("models/sam/sam_vit_b_01ec64.pth")
-set_sam_service(sam)
+# ==========================
+# SAM
+# ==========================
+
+sam_service = SAMService(
+    model_path="models/sam/sam_vit_l_0b3195.pth"
+)
+
+set_sam_service(sam_service)
+
+# ==========================
+# ROUTES
+# ==========================
+
 app.include_router(segment_router)
-
-@app.get("/")
-def read_root():
-    return {"message": "Merged 3D API funcionando"}
-
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
