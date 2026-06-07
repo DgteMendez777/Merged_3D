@@ -1,14 +1,9 @@
 import { API_URL } from "@/lib/api";
 import { Point } from "@/types/segmentation";
 
-export async function segmentImage(
-  file: File,
-  points: Point[]
-) {
+export async function segmentImage(file: File, points: Point[]) {
   const formData = new FormData();
-
   formData.append("file", file);
-
   formData.append(
     "points",
     JSON.stringify(
@@ -34,8 +29,7 @@ export async function segmentImage(
     );
   }
 
-  const blob =
-    await response.blob();
+  const blob = await response.blob();
 
   return URL.createObjectURL(blob);
 }

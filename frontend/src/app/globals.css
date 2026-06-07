@@ -12,8 +12,7 @@
   --success: #22c55e;
 }
 
-html,
-body {
+html, body {
   width: 100%;
   min-height: 100%;
 }

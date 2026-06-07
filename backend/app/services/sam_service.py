@@ -23,7 +23,7 @@ class SAMService:
             dtype=np.int32
         )
         
-        masks, scores = self.predictor.predict(
+        masks, scores, logits = self.predictor.predict(
             point_coords=input_point,
             point_labels=input_label,
             multimask_output=True

@@ -1,53 +1,30 @@
 "use client";
 
 import { useState } from "react";
-
-import { segmentImage }
-from "@/services/segmentation.service";
-
-import { Point }
-from "@/types/segmentation";
+import { segmentImage } from "@/services/segmentation.service";
+import { Point } from "@/types/segmentation";
 
 export function useSegmentation() {
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [mask, setMask] = useState<string | null>(null);
 
-  const [error, setError] =
-    useState<string | null>(null);
-
-  const [mask, setMask] =
-    useState<string | null>(null);
-
-  async function runSegmentation(
-    file: File,
-    points: Point[]
-  ) {
+  async function runSegmentation(file: File, points: Point[]) {
     try {
       setLoading(true);
       setError(null);
 
-      const maskUrl =
-        await segmentImage(
-          file,
-          points
-        );
+      const maskUrl = await segmentImage(file, points);
 
       setMask(maskUrl);
     } catch (err) {
       console.error(err);
 
-      setError(
-        "Error al segmentar"
-      );
+      setError("Error al segmentar");
     } finally {
       setLoading(false);
     }
   }
 
-  return {
-    loading,
-    error,
-    mask,
-    runSegmentation,
-  };
+  return {loading, error, mask, runSegmentation};
 }
