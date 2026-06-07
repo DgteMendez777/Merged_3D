@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import cv2
 from segment_anything import sam_model_registry, SamPredictor
 
 class SAMService:
@@ -24,7 +23,7 @@ class SAMService:
             dtype=np.int32
         )
         
-        masks, scores, logits = self.predictor.predict(
+        masks, scores = self.predictor.predict(
             point_coords=input_point,
             point_labels=input_label,
             multimask_output=True
