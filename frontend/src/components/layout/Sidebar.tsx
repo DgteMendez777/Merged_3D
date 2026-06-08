@@ -2,6 +2,8 @@
 
 import { Point } from "@/types/segmentation";
 import ViewSelector from "./ViewSelector";
+import ModelSelector from "@/components/pointcloud/ModelSelector";
+import { DepthModel } from "@/types/depth-model";
 
 interface Props {
   points: Point[]; 
@@ -14,9 +16,12 @@ interface Props {
   
   viewMode: | "original" | "mask" | "overlay" | "pointcloud";
   onChangeViewMode: (mode: | "original" | "mask" | "overlay" | "pointcloud") => void;
+
+  depthModel: DepthModel;
+  onChangeDepthModel: (model: DepthModel) => void;
 }
 
-export default function Sidebar({points, activePoint, onAddPoint, onDeletePoint, onEditPoint, onResetImage, viewMode, onChangeViewMode,}: Props) {
+export default function Sidebar({points, activePoint, onAddPoint, onDeletePoint, onEditPoint, onResetImage, viewMode, onChangeViewMode, depthModel, onChangeDepthModel}: Props) {
   return (
     <aside className="w-80 min-h-screen bg-(--background-secondary) border-r border-(--border) p-6 flex flex-col gap-6">
       <div>
@@ -69,6 +74,7 @@ export default function Sidebar({points, activePoint, onAddPoint, onDeletePoint,
         </div>
       </div>
       <ViewSelector viewMode={viewMode} onChange={onChangeViewMode}/>
+      <ModelSelector model={depthModel} onChange={onChangeDepthModel}/>
     </aside>
   );
 }

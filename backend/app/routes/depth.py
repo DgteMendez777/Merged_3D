@@ -6,7 +6,7 @@ import numpy as np
 router = APIRouter()
 depth_service = None
 
-def set_depth_services(service):
+def set_depth_service(service):
     global depth_service
     depth_service = service
     

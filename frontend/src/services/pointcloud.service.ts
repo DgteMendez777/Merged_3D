@@ -1,7 +1,8 @@
 import { API_URL } from "@/lib/api";
+import { DepthModel } from "@/types/depth-model";
 import { Point } from "@/types/segmentation"
 
-export async function generatePointCloud(file: File, points: Point[]){
+export async function generatePointCloud(file: File, points: Point[], model: DepthModel){
     const formData = new FormData();
     formData.append("file", file);
     formData.append(
@@ -14,6 +15,7 @@ export async function generatePointCloud(file: File, points: Point[]){
             }))
         )
     );
+    formData.append("model", model);
 
     const response = await fetch(
         `${API_URL}/pointcloud`,
