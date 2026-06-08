@@ -9,11 +9,13 @@ import { useState } from "react";
 import { Point } from "@/types/segmentation";
 import { useSegmentation } from "@/hooks/useSegmentation";
 import { usePointCloud } from "@/hooks/usePointCloud";
+import { DepthModel } from "@/types/depth-model";
 
 export default function Home() {
   const {loading: segmentationLoading, error, mask, runSegmentation} = useSegmentation();
   const {loading: pointCloudLoading, pointCloudUrl, runPointCloud} = usePointCloud();
   const [viewMode, setViewMode] = useState<"original" | "mask" | "overlay" | "pointcloud">("original");
+  const [depthModel, setDepthModel] = useState<DepthModel>("depth_anything");
   const [imageUrl, setImageUrl] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [points, setPoints] = useState<Point[]>([]);
@@ -76,6 +78,8 @@ export default function Home() {
         onResetImage={resetImage}
         viewMode={viewMode}
         onChangeViewMode={setViewMode}
+        depthModel={depthModel}
+        onChangeDepthModel={setDepthModel}
       />
 
       <section className="flex-1 flex flex-col gap-8 p-8">
@@ -139,7 +143,7 @@ export default function Home() {
         )}
 
         {points.length > 0 && selectedFile && (
-          <button onClick={() => {runPointCloud(selectedFile, points);}}
+          <button onClick={() => {runPointCloud(selectedFile, points, depthModel);}}
             disabled={pointCloudLoading}
             className="px-6 py-3 rounded-xl bg-(--primary) hover:bg-(--primary-hover)"
           >
