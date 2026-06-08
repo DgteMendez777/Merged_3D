@@ -20,3 +20,4 @@ backend/models/
 *.pth
 *.pt
 *.onnx
+*.ply
