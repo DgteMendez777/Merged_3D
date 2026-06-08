@@ -27,36 +27,86 @@ export default function PointCloudViewer({pointCloudUrl}: Props) {
             container.clientWidth,
             container.clientHeight
         );
+        renderer.setPixelRatio(
+            window.devicePixelRatio
+        );
 
         container.appendChild(renderer.domElement);
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        const light = new THREE.AmbientLight(0xffffff, 2);
-        scene.add(light);
+        controls.dampingFactor = 0.08;
+        controls.enableZoom = true;
+        controls.zoomSpeed = 1.2;
+        controls.enablePan = true;
+        controls.panSpeed = 1.0;
+        controls.rotateSpeed = 1.0;
+        controls.screenSpacePanning = true;
+        const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+        scene.add(ambientLight);
         const loader = new PLYLoader();
-        loader.load(pointCloudUrl, (geometry) => {
-            geometry.computeBoundingSphere();
-            const material = new THREE.PointsMaterial({size: 2, vertexColors: true});
-            const points = new THREE.Points(geometry, material);
-            scene.add(points);
-            const center = geometry.boundingSphere?.center;
+        loader.load(pointCloudUrl,
+            (geometry) => {
+                geometry.computeBoundingBox();
+                geometry.computeBoundingSphere();
+                const sphere = geometry.boundingSphere;
 
-            if (center) {
-                points.position.x = -center.x;
-                points.position.y = -center.y;
-                points.position.z = -center.z;
+                if (!sphere)
+                    return;
+
+                const radius = sphere.radius;
+                const center = sphere.center;
+                const material = new THREE.PointsMaterial({
+                        size: Math.max(
+                            radius * 0.002,
+                            1
+                        ),
+                        vertexColors: true,
+                    });
+
+                const pointCloud = new THREE.Points(geometry, material);
+                
+                pointCloud.position.set(
+                    -center.x,
+                    -center.y,
+                    -center.z
+                );
+
+                scene.add(pointCloud);
+                camera.position.set(0, 0, radius * 2);
+                camera.lookAt(0, 0, 0);
+                controls.target.set(0, 0, 0);
+                controls.minDistance = radius * 0.1;
+                controls.maxDistance = radius * 10;
+                controls.update();
             }
-        });
+        );
 
-        function animate() {
+        const animate = () => {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
-        }
+        };
 
         animate();
+
+        const handleResize = () => {
+            if (!containerRef.current)
+                return;
+
+            camera.aspect = containerRef.current.clientWidth / containerRef.current.clientHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(
+                containerRef.current.clientWidth,
+                containerRef.current.clientHeight
+            );
+        };
+
+        window.addEventListener("resize", handleResize
+        );
         
         return () => {
+            window.removeEventListener("resize", handleResize);
             renderer.dispose();
 
             while (container.firstChild) {

@@ -26,13 +26,15 @@ class PointCloudService:
                 depth_masked[valid]
             ),
             axis = 1,
-        )        
+        )
         
         colors = image[valid] / 255.0
         
         pcd = o3d.geometry.PointCloud()
         pcd.points = (o3d.utility.Vector3dVector(points))
         pcd.colors = (o3d.utility.Vector3dVector(colors))
+        voxel_size = max(h, w) * 0.0005
+        pcd = pcd.voxel_down_sample(voxel_size = voxel_size)
         
         filename = f"{uuid.uuid4()}.ply"
         output_path = os.path.join(TEMP_POINTCLOUD_DIR, filename)
