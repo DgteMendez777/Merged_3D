@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFIle, File
+from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import Response
 import cv2
 import numpy as np
@@ -9,7 +9,22 @@ midas_service = None
 def set_midas_service(service):
     global midas_service
     midas_service = service
-    
+
+
 @router.post("/depth-midas")
-async def depth_midas(file: UploadFIle = File(...)):
-    pass
+async def generate_depth_midas(file: UploadFile = File(...)):
+    image_bytes = await file.read()
+    image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    depth = midas_service.predict(image)
+    depth_normalized = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
+    depth_normalized = depth_normalized.astype(np.uint8)
+    success, buffer = cv2.imencode(".png", depth_normalized)
+
+    if not success:
+        raise Exception("No se pudo generar el mapa de profundidad MiDaS")
+
+    return Response(
+        content=buffer.tobytes(),
+        media_type="image/png"
+    )
