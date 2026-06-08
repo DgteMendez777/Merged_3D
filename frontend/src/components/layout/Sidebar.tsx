@@ -12,9 +12,8 @@ interface Props {
   onEditPoint: (index: number) => void;
   onResetImage: () => void;
   
-  viewMode: | "original" | "mask" | "overlay";
-
-  onChangeViewMode: (mode: | "original" | "mask" | "overlay") => void;
+  viewMode: | "original" | "mask" | "overlay" | "pointcloud";
+  onChangeViewMode: (mode: | "original" | "mask" | "overlay" | "pointcloud") => void;
 }
 
 export default function Sidebar({points, activePoint, onAddPoint, onDeletePoint, onEditPoint, onResetImage, viewMode, onChangeViewMode,}: Props) {

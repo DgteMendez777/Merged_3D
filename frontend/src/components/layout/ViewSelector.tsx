@@ -1,8 +1,8 @@
 "use client";
 
 interface Props {
-  viewMode: | "original" | "mask" | "overlay";
-  onChange: (mode: | "original" | "mask" | "overlay") => void;
+  viewMode: | "original" | "mask" | "overlay" | "pointcloud";
+  onChange: (mode: | "original" | "mask" | "overlay" | "pointcloud") => void;
 }
 
 export default function ViewSelector({viewMode, onChange}: Props) {
@@ -40,6 +40,16 @@ export default function ViewSelector({viewMode, onChange}: Props) {
         `}
       >
         Overlay
+      </button>
+
+      <button onClick={() => onChange("pointcloud")}
+        className={`w-full p-3 rounded-xl border text-left
+          ${
+            viewMode === "pointcloud" ? "border-(--primary) bg-(--card)" : "border-(--border)"
+          }
+        `}
+      >
+        Nube de Puntos 3D
       </button>
     </div>
   );

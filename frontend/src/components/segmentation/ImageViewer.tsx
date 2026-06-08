@@ -3,7 +3,7 @@
 interface Props {
   imageUrl: string;
   maskUrl: string | null;
-  mode: | "original" | "mask" | "overlay";
+  mode: | "original" | "mask" | "overlay" | "pointcloud";
 }
 
 export default function ImageViewer({imageUrl, maskUrl, mode}: Props) {

@@ -22,7 +22,7 @@ app.add_middleware(
 
 sam_service = SAMService(model_path=SAM_MODEL_PATH)
 depth_service = DepthAnythingService(model_path=DEPTH_ANYTHING_MODEL_PATH)
-pointcloud_service = PointCloudService(depth_service)
+pointcloud_service = PointCloudService(depth_service, sam_service)
 
 set_sam_service(sam_service)
 set_depth_services(depth_service)
