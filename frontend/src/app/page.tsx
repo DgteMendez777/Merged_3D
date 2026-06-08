@@ -4,13 +4,16 @@ import Sidebar from "@/components/layout/Sidebar";
 import ImageUploader from "@/components/segmentation/ImageUploader";
 import ImageCanvas from "@/components/segmentation/ImageCanvas";
 import ImageViewer from "@/components/segmentation/ImageViewer";
+import PointCloudViewer from "@/components/pointcloud/PointCloudViewer";
 import { useState } from "react";
 import { Point } from "@/types/segmentation";
 import { useSegmentation } from "@/hooks/useSegmentation";
+import { usePointCloud } from "@/hooks/usePointCloud";
 
 export default function Home() {
-  const {loading, error, mask, runSegmentation} = useSegmentation();
-  const [viewMode, setViewMode] = useState<"original" | "mask" | "overlay">("original");
+  const {loading: segmentationLoading, error, mask, runSegmentation} = useSegmentation();
+  const {loading: pointCloudLoading, pointCloudUrl, runPointCloud} = usePointCloud();
+  const [viewMode, setViewMode] = useState<"original" | "mask" | "overlay" | "pointcloud">("original");
   const [imageUrl, setImageUrl] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [points, setPoints] = useState<Point[]>([]);
@@ -106,7 +109,7 @@ export default function Home() {
           />
         )}
 
-        {imageUrl && mask && viewMode !== "original" && (
+        {imageUrl && mask && (viewMode === "mask" || viewMode === "overlay") && (
           <div className="bg-(--background-secondary) border border-(--border) rounded-3xl p-8 flex justify-center items-center min-h-[650px]">
             <ImageViewer
               imageUrl={imageUrl}
@@ -116,16 +119,35 @@ export default function Home() {
           </div>
         )}
 
+        {
+          viewMode === "pointcloud" && pointCloudUrl && (
+            <div className="bg-(--background-secondary) border border-(--border) rounded-3xl p-4">
+              <PointCloudViewer pointCloudUrl={pointCloudUrl}/>
+            </div>
+          )
+        }
+
         {points.length > 0 && selectedFile && (
           <button onClick={() => runSegmentation(
             selectedFile,
             points
           )}
-          disabled={loading}
+          disabled={segmentationLoading}
           className="px-6 py-3 rounded-xl bg-(--primary) hover:bg-(--primary-hover)">
-            {loading ? "Segmentando..." : "Generar máscara"}
+            {segmentationLoading ? "Segmentando..." : "Generar máscara"}
           </button>
         )}
+
+        {points.length > 0 && selectedFile && (
+          <button onClick={() => {runPointCloud(selectedFile, points);}}
+            disabled={pointCloudLoading}
+            className="px-6 py-3 rounded-xl bg-(--primary) hover:bg-(--primary-hover)"
+          >
+            {pointCloudLoading ? "Generando nube..." : "Generar Nube 3D"}
+          </button>
+        )}
+
+        {pointCloudUrl && (<p className="text-green-400"> Nube generada correctamente </p>)}
 
         {error && (
           <p className="text-red-400">

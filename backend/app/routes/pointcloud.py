@@ -1,7 +1,8 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
 from fastapi.responses import FileResponse
 import cv2
 import numpy as np
+import json
 
 router = APIRouter()
 pointcloud_service = None
@@ -11,11 +12,12 @@ def set_pointcloud_service(service):
     pointcloud_service = service
     
 @router.post("/pointcloud")
-async def generate_pointcloud(file: UploadFile = File(...)):
+async def generate_pointcloud(file: UploadFile = File(...), points: str = Form(...)):
+    points_data = json.loads(points)
     image_bytes = await file.read()
     image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    ply_path = pointcloud_service.generate(image)
+    ply_path = pointcloud_service.generate(image, points_data)
     
     return FileResponse(
         ply_path,
