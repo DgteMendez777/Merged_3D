@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.segment import router as segment_router
+from app.routes.depth import router as depth_router
+from app.routes.pointcloud import router as pointcloud_router
 from app.routes.segment import set_sam_service
+from app.routes.depth import set_depth_services
+from app.routes.pointcloud import set_pointcloud_service
 from app.services.sam_service import SAMService
-from app.core.config import SAM_MODEL_PATH, ALLOWED_ORIGINS
+from app.services.depth_anything_service import DepthAnythingService
+from app.services.point_cloud_service import PointCloudService
+from app.core.config import SAM_MODEL_PATH, ALLOWED_ORIGINS, DEPTH_ANYTHING_MODEL_PATH
 
 app = FastAPI()
 
@@ -15,6 +21,12 @@ app.add_middleware(
 )
 
 sam_service = SAMService(model_path=SAM_MODEL_PATH)
+depth_service = DepthAnythingService(model_path=DEPTH_ANYTHING_MODEL_PATH)
+pointcloud_service = PointCloudService(depth_service)
 
 set_sam_service(sam_service)
+set_depth_services(depth_service)
+set_pointcloud_service(pointcloud_service)
 app.include_router(segment_router)
+app.include_router(depth_router)
+app.include_router(pointcloud_router)
