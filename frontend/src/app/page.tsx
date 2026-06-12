@@ -12,21 +12,55 @@ import { useSegmentation } from "@/hooks/useSegmentation";
 import { usePointCloud } from "@/hooks/usePointCloud";
 import { DepthModel } from "@/types/depth-model";
 
+type PointCloudDisplay = "a" | "b" | "both";
+
 export default function Home() {
-  const { loading: segmentationLoading, error, mask, runSegmentation } = useSegmentation();
-  const { loading: pointCloudLoading, pointCloudA, pointCloudB, runPointCloud } = usePointCloud();
-  const [viewMode, setViewMode] = useState<"original" | "mask" | "overlay" | "pointcloud">("original");
-  const [depthModel, setDepthModel] = useState<DepthModel>("depth_anything");
+  const { loading: segmentationLoading, error, mask, runSegmentation } =
+    useSegmentation();
+
+  const {
+    loading: pointCloudLoading,
+    pointCloudA,
+    pointCloudB,
+    runPointCloud,
+  } = usePointCloud();
+
+  const [viewMode, setViewMode] = useState<
+    "original" | "mask" | "overlay" | "pointcloud"
+  >("original");
+
+  const [depthModel, setDepthModel] =
+    useState<DepthModel>("depth_anything");
 
   const [imageUrl, setImageUrl] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] =
+    useState<File | null>(null);
 
   const [points, setPoints] = useState<Point[]>([]);
   const [isAddingPoint, setIsAddingPoint] = useState(false);
-  const [activePoint, setActivePoint] = useState<number | null>(null);
+  const [activePoint, setActivePoint] =
+    useState<number | null>(null);
 
-  const [modelA, setModelA] = useState<DepthModel>("depth_anything");
-  const [modelB, setModelB] = useState<DepthModel>("midas");
+  const [modelA, setModelA] =
+    useState<DepthModel>("depth_anything");
+
+  const [modelB, setModelB] =
+    useState<DepthModel>("midas");
+
+  const [pointCloudDisplay, setPointCloudDisplay] =
+    useState<PointCloudDisplay>("both");
+
+  function getVisiblePointCloudUrls() {
+    if (pointCloudDisplay === "a") {
+      return pointCloudA ? [pointCloudA] : [];
+    }
+
+    if (pointCloudDisplay === "b") {
+      return pointCloudB ? [pointCloudB] : [];
+    }
+
+    return [pointCloudA, pointCloudB].filter(Boolean) as string[];
+  }
 
   function addPoint() {
     setActivePoint(null);
@@ -43,6 +77,7 @@ export default function Home() {
     if (activePoint === null) return;
 
     const updated = [...points];
+
     updated[activePoint] = {
       ...point,
       label: updated[activePoint]?.label ?? 1,
@@ -54,6 +89,7 @@ export default function Home() {
 
   function deletePoint(index: number) {
     const updated = points.filter((_, i) => i !== index);
+
     setPoints(updated);
 
     if (activePoint === index) {
@@ -94,7 +130,10 @@ export default function Home() {
 
       <section className="flex-1 flex flex-col gap-8 p-8">
         <div>
-          <h2 className="text-3xl font-bold">Segmentación SAM y Fusión 3D</h2>
+          <h2 className="text-3xl font-bold">
+            Segmentación SAM y Fusión 3D
+          </h2>
+
           <p className="text-(--text-secondary)">
             Selecciona una imagen, agrega puntos y proyecta la profundidad en un único escenario.
           </p>
@@ -120,7 +159,8 @@ export default function Home() {
           />
         )}
 
-        {imageUrl && mask &&
+        {imageUrl &&
+          mask &&
           (viewMode === "mask" || viewMode === "overlay") && (
             <div className="bg-(--background-secondary) border border-(--border) rounded-3xl p-8 flex justify-center items-center min-h-[650px]">
               <ImageViewer
@@ -132,26 +172,65 @@ export default function Home() {
           )}
 
         {viewMode === "pointcloud" && (pointCloudA || pointCloudB) && (
-  <div className="bg-(--background-secondary) border border-(--border) rounded-3xl p-6 w-full">
-    <div className="w-full flex justify-between items-center mb-4 px-2">
-      <span className="text-sm font-semibold text-blue-400">
-        Modelo A: {modelA.toUpperCase()}
-      </span>
+          <div className="bg-(--background-secondary) border border-(--border) rounded-3xl p-6 w-full">
+            <div className="w-full flex flex-col gap-4 mb-4">
+              <div className="flex justify-between items-center px-2">
+                <span className="text-sm font-semibold text-blue-400">
+                  Modelo A: {modelA.toUpperCase()}
+                </span>
 
-      <span className="text-xs bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full font-medium border border-emerald-500/20">
-        Escenario Fusionado Superpuesto
-      </span>
+                <span className="text-xs bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full font-medium border border-emerald-500/20">
+                  Comparación de nubes
+                </span>
 
-      <span className="text-sm font-semibold text-purple-400">
-        Modelo B: {modelB.toUpperCase()}
-      </span>
-    </div>
+                <span className="text-sm font-semibold text-purple-400">
+                  Modelo B: {modelB.toUpperCase()}
+                </span>
+              </div>
 
-    <div className="w-full h-[650px] bg-[#1e1e2e] rounded-2xl border border-(--border) overflow-hidden">
-      <PointCloudViewer pointCloudUrls={   [pointCloudA, pointCloudB].filter(Boolean) as string[] }/>
-    </div>
-  </div>
-)}
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={() => setPointCloudDisplay("a")}
+                  className={`px-4 py-2 rounded-xl border transition ${
+                    pointCloudDisplay === "a"
+                      ? "border-[var(--primary)] bg-[var(--card)]"
+                      : "border-[var(--border)]"
+                  }`}
+                >
+                  Ver modelo A
+                </button>
+
+                <button
+                  onClick={() => setPointCloudDisplay("both")}
+                  className={`px-4 py-2 rounded-xl border transition ${
+                    pointCloudDisplay === "both"
+                      ? "border-[var(--primary)] bg-[var(--card)]"
+                      : "border-[var(--border)]"
+                  }`}
+                >
+                  Ver ambos
+                </button>
+
+                <button
+                  onClick={() => setPointCloudDisplay("b")}
+                  className={`px-4 py-2 rounded-xl border transition ${
+                    pointCloudDisplay === "b"
+                      ? "border-[var(--primary)] bg-[var(--card)]"
+                      : "border-[var(--border)]"
+                  }`}
+                >
+                  Ver modelo B
+                </button>
+              </div>
+            </div>
+
+            <div className="w-full h-[650px] bg-[#1e1e2e] rounded-2xl border border-(--border) overflow-hidden">
+              <PointCloudViewer
+                pointCloudUrls={getVisiblePointCloudUrls()}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-4">
           {points.length > 0 && selectedFile && (
@@ -166,11 +245,15 @@ export default function Home() {
 
           {points.length > 0 && selectedFile && (
             <button
-              onClick={() => runPointCloud(selectedFile, points, modelA, modelB)}
+              onClick={() =>
+                runPointCloud(selectedFile, points, modelA, modelB)
+              }
               disabled={pointCloudLoading}
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 disabled:opacity-50 text-white font-medium transition"
             >
-              {pointCloudLoading ? "Generando nubes..." : "Generar Nube 3D Comparativa"}
+              {pointCloudLoading
+                ? "Generando nubes..."
+                : "Generar Nube 3D Comparativa"}
             </button>
           )}
         </div>

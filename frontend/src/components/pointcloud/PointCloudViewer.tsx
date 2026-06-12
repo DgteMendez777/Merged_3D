@@ -29,10 +29,8 @@ export default function PointCloudViewer({ pointCloudUrls }: Props) {
       45,
       width / height,
       0.1,
-      5000
+      20000
     );
-
-    camera.position.set(0, 0, 50);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -45,51 +43,75 @@ export default function PointCloudViewer({ pointCloudUrls }: Props) {
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+    controls.minDistance = 10;
+    controls.maxDistance = 10000;
 
-    const loader = new PLYLoader();
     const group = new THREE.Group();
     scene.add(group);
 
-    pointCloudUrls.forEach((url, index) => {
-      const cleanUrl = url.replace(/([^:]\/)\/+/g, "$1");
+    const grid = new THREE.GridHelper(3000, 60);
+    grid.position.y = -300;
+    scene.add(grid);
 
-      loader.load(
-        cleanUrl,
-        (geometry) => {
-          geometry.computeBoundingBox();
+    const axes = new THREE.AxesHelper(500);
+    scene.add(axes);
 
-          const material = new THREE.PointsMaterial({
-            size: 0.1,
-            vertexColors: true,
-            transparent: true,
-            opacity: index === 1 ? 0.65 : 1,
-          });
+    const loader = new PLYLoader();
 
-          const pointsMesh = new THREE.Points(geometry, material);
-          group.add(pointsMesh);
+    const loadPromises = pointCloudUrls.map((url, index) => {
+      return new Promise<THREE.Points>((resolve, reject) => {
+        const cleanUrl = url.replace(/([^:]\/)\/+/g, "$1");
 
-          const box = new THREE.Box3().setFromObject(group);
-          const center = new THREE.Vector3();
-          const size = new THREE.Vector3();
+        loader.load(
+          cleanUrl,
+          (geometry) => {
+            geometry.computeBoundingBox();
+            geometry.computeVertexNormals();
 
-          box.getCenter(center);
-          box.getSize(size);
+            const material = new THREE.PointsMaterial({
+              size: 2,
+              vertexColors: true,
+              transparent: true,
+              opacity: index === 1 ? 0.65 : 1,
+              sizeAttenuation: false,
+            });
 
-          group.position.sub(center);
-
-          const maxDim = Math.max(size.x, size.y, size.z);
-
-          controls.target.set(0, 0, 0);
-          camera.position.set(0, 0, maxDim > 0 ? maxDim * 1.8 : 50);
-          camera.lookAt(0, 0, 0);
-          controls.update();
-        },
-        undefined,
-        (error) => {
-          console.error("Error cargando PLY:", error);
-        }
-      );
+            const pointsMesh = new THREE.Points(geometry, material);
+            resolve(pointsMesh);
+          },
+          undefined,
+          (error) => reject(error)
+        );
+      });
     });
+
+    Promise.all(loadPromises)
+      .then((meshes) => {
+        meshes.forEach((mesh) => group.add(mesh));
+
+        const box = new THREE.Box3().setFromObject(group);
+        const center = new THREE.Vector3();
+        const size = new THREE.Vector3();
+
+        box.getCenter(center);
+        box.getSize(size);
+
+        group.position.sub(center);
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const distance = maxDim > 0 ? maxDim * 2.2 : 800;
+
+        camera.position.set(0, 0, distance);
+        camera.near = 0.1;
+        camera.far = distance * 20;
+        camera.updateProjectionMatrix();
+
+        controls.target.set(0, 0, 0);
+        controls.update();
+      })
+      .catch((error) => {
+        console.error("Error cargando nubes PLY:", error);
+      });
 
     let animationFrameId: number;
 

@@ -5,6 +5,7 @@ import uuid
 
 from app.core.config import TEMP_POINTCLOUD_DIR
 
+
 class PointCloudService:
     def __init__(self, depth_service, sam_service):
         self.depth_service = depth_service
@@ -17,15 +18,38 @@ class PointCloudService:
         self.sam_service.load_image(image)
         mask = self.sam_service.predict(points_data)
 
-        depth_masked = np.where(mask, depth, 0)
-
         h, w = depth.shape
-        xs, ys = np.meshgrid(np.arange(w), np.arange(h))
 
-        valid = depth_masked > 0
+        valid = mask & np.isfinite(depth)
+
+        if not np.any(valid):
+            raise Exception("No hay puntos válidos para generar la nube")
+
+        depth_values = depth[valid]
+
+        depth_min = depth_values.min()
+        depth_max = depth_values.max()
+
+        depth_normalized = (depth - depth_min) / (
+            depth_max - depth_min + 1e-8
+        )
+
+        xs, ys = np.meshgrid(
+            np.arange(w),
+            np.arange(h)
+        )
+
+        x_centered = xs - (w / 2)
+        y_centered = (h / 2) - ys
+
+        z_centered = depth_normalized - depth_normalized[valid].mean()
 
         points = np.stack(
-            (xs[valid], ys[valid], depth_masked[valid]),
+            (
+                x_centered[valid],
+                y_centered[valid],
+                z_centered[valid] * max(h, w),
+            ),
             axis=1
         )
 
