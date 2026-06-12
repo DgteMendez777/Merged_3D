@@ -12,7 +12,7 @@ import { useSegmentation } from "@/hooks/useSegmentation";
 import { usePointCloud } from "@/hooks/usePointCloud";
 import { DepthModel } from "@/types/depth-model";
 
-type PointCloudDisplay = "a" | "b" | "both";
+type PointCloudDisplay = "a" | "b" | "both" | "fusion";
 
 export default function Home() {
   const { loading: segmentationLoading, error, mask, runSegmentation } =
@@ -22,7 +22,8 @@ export default function Home() {
     loading: pointCloudLoading,
     pointCloudA,
     pointCloudB,
-    runPointCloud,
+    fusionUrl,
+    runPointCloud
   } = usePointCloud();
 
   const [viewMode, setViewMode] = useState<
@@ -57,6 +58,10 @@ export default function Home() {
 
     if (pointCloudDisplay === "b") {
       return pointCloudB ? [pointCloudB] : [];
+    }
+
+    if (pointCloudDisplay === "fusion") {
+      return fusionUrl ? [fusionUrl] : [];
     }
 
     return [pointCloudA, pointCloudB].filter(Boolean) as string[];
@@ -221,6 +226,17 @@ export default function Home() {
                 >
                   Ver modelo B
                 </button>
+
+                <button
+  onClick={() => setPointCloudDisplay("fusion")}
+  className={`px-4 py-2 rounded-xl border transition ${
+    pointCloudDisplay === "fusion"
+      ? "border-[var(--primary)] bg-[var(--card)]"
+      : "border-[var(--border)]"
+  }`}
+>
+  Ver fusión
+</button>
               </div>
             </div>
 
