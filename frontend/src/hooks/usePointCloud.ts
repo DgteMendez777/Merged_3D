@@ -10,6 +10,7 @@ export function usePointCloud() {
   const [loading, setLoading] = useState(false);
   const [pointCloudA, setPointCloudA] = useState<string | null>(null);
   const [pointCloudB, setPointCloudB] = useState<string | null>(null);
+  const [fusionUrl, setFusionUrl] = useState<string | null>(null);
 
   const runPointCloud = async (
     file: File,
@@ -37,6 +38,9 @@ export function usePointCloud() {
 
       setPointCloudA(urlA);
       setPointCloudB(urlB);
+      setPointCloudA(result.ply_a);
+      setPointCloudB(result.ply_b);
+      setFusionUrl(result.fusion);
 
     } catch (error) {
       console.error("Error al generar las nubes de puntos en el hook:", error);
@@ -49,6 +53,7 @@ export function usePointCloud() {
     loading,
     pointCloudA,
     pointCloudB,
-    runPointCloud
+    runPointCloud,
+    fusionUrl
   };
 }
