@@ -20,6 +20,7 @@ from app.services.depth_anything_service import DepthAnythingService
 from app.services.midas_service import MiDaSService
 from app.services.adabins_service import AdaBinsService
 from app.services.point_cloud_service import PointCloudService
+from app.services.metric3d_service import Metric3DService
 from app.routes.pointcloud import set_pointcloud_service as inject_pointcloud_factory
 
 from app.core.config import (
@@ -28,7 +29,9 @@ from app.core.config import (
     MIDAS_MODEL_PATH,
     ADABINS_MODEL_PATH,
     ALLOWED_ORIGINS,
-    TEMP_POINTCLOUD_DIR
+    TEMP_POINTCLOUD_DIR,
+    METRIC3D_MODEL_PATH,
+    METRIC3D_REPO_PATH
 )
 
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
@@ -53,6 +56,12 @@ def create_depth_service(model: str):
 
     if model == "adabins":
         return AdaBinsService(model_path=ADABINS_MODEL_PATH)
+    
+    if model == "metric3d":
+        return Metric3DService(
+            model_path=METRIC3D_MODEL_PATH,
+            repo_path=METRIC3D_REPO_PATH
+        )
 
     return DepthAnythingService(model_path=DEPTH_ANYTHING_MODEL_PATH)
 

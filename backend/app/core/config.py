@@ -7,3 +7,5 @@ ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
+METRIC3D_MODEL_PATH = "models/metric3d/metric_depth_vit_large_800k.pth"
+METRIC3D_REPO_PATH = "external/metric3d/Metric3D"
