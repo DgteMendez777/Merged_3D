@@ -2,4 +2,5 @@ export type DepthModel =
   | "depth_anything"
   | "midas"
   | "adabins"
-  | "metric3d";
+  | "metric3d"
+  | "depth_pro";

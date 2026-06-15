@@ -9,3 +9,4 @@ ALLOWED_ORIGINS = [
 ]
 METRIC3D_MODEL_PATH = "models/metric3d/metric_depth_vit_large_800k.pth"
 METRIC3D_REPO_PATH = "external/metric3d/Metric3D"
+DEPTH_PRO_MODEL_PATH = "models/depth_pro/depth_pro.pt"

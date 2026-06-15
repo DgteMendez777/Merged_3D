@@ -26,6 +26,9 @@ export default function ModelSelector({ title, model, onChange }: Props) {
         <option value="metric3d">
   Metric3D
 </option>
+<option value="depth_pro">
+  DepthPro
+</option>
       </select>
     </div>
   );
