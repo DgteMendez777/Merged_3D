@@ -23,6 +23,9 @@ export default function ModelSelector({ title, model, onChange }: Props) {
         <option value="depth_anything">Depth Anything V2</option>
         <option value="midas">MiDaS DPT Large</option>
         <option value="adabins">AdaBins</option>
+        <option value="metric3d">
+  Metric3D
+</option>
       </select>
     </div>
   );

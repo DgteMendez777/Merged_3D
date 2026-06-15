@@ -30,8 +30,6 @@ class FusionService:
         fused_points = []
         fused_colors = []
 
-        used_b = set()
-
         for index_a, point_a in enumerate(points_a):
             _, indices, distances = tree_b.search_knn_vector_3d(
                 point_a,
@@ -44,34 +42,35 @@ class FusionService:
             index_b = indices[0]
             distance = np.sqrt(distances[0])
 
-            if distance <= threshold:
-                point_b = points_b[index_b]
-
-                fused_point = (point_a + point_b) / 2.0
-
-                color_a = colors_a[index_a] if len(colors_a) > 0 else np.array([1, 1, 1])
-                color_b = colors_b[index_b] if len(colors_b) > 0 else np.array([1, 1, 1])
-
-                fused_color = (color_a + color_b) / 2.0
-
-                fused_points.append(fused_point)
-                fused_colors.append(fused_color)
-
-                used_b.add(index_b)
-            else:
-                fused_points.append(point_a)
-
-                color_a = colors_a[index_a] if len(colors_a) > 0 else np.array([1, 1, 1])
-                fused_colors.append(color_a)
-
-        for index_b, point_b in enumerate(points_b):
-            if index_b in used_b:
+            # SOLO aceptamos coincidencias reales
+            if distance > threshold:
                 continue
 
-            fused_points.append(point_b)
+            point_b = points_b[index_b]
 
-            color_b = colors_b[index_b] if len(colors_b) > 0 else np.array([1, 1, 1])
-            fused_colors.append(color_b)
+            fused_point = (point_a + point_b) / 2.0
+
+            color_a = (
+                colors_a[index_a]
+                if len(colors_a) > 0
+                else np.array([1.0, 1.0, 1.0])
+            )
+
+            color_b = (
+                colors_b[index_b]
+                if len(colors_b) > 0
+                else np.array([1.0, 1.0, 1.0])
+            )
+
+            fused_color = (color_a + color_b) / 2.0
+
+            fused_points.append(fused_point)
+            fused_colors.append(fused_color)
+
+        if len(fused_points) == 0:
+            raise Exception(
+                "No hubo suficientes coincidencias para fusionar las nubes"
+            )
 
         fused_cloud = o3d.geometry.PointCloud()
         fused_cloud.points = o3d.utility.Vector3dVector(
@@ -97,14 +96,15 @@ class FusionService:
         size = bbox.get_extent()
         max_dim = max(size)
 
-        return max_dim * 0.025
+        # Más estricto: solo zonas realmente coincidentes
+        return max_dim * 0.01
 
     def _calculate_voxel_size(self, cloud):
         bbox = cloud.get_axis_aligned_bounding_box()
         size = bbox.get_extent()
         max_dim = max(size)
 
-        return max_dim * 0.003
+        return max_dim * 0.002
 
     def _save_cloud(self, cloud):
         filename = f"fusion_{uuid.uuid4()}.ply"
